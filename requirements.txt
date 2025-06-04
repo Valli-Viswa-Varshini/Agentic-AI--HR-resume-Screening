@@ -1,5 +1,5 @@
 langchain==0.1.14
-openai==1.14.3
+openai
 faiss-cpu
 pandas
 python-dotenv
@@ -8,5 +8,5 @@ numpy
 PyPDF2
 streamlit
 pyodbc
-langchain-community==0.0.24
+langchain-community==0.0.36
 pydantic==1.10.13
