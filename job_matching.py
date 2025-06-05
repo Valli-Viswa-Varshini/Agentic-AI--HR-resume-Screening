@@ -1,11 +1,12 @@
 import os
-import openai
 import re
+from openai import OpenAI
 from langchain.tools import StructuredTool
-from pydantic.v1 import BaseModel  # ✅ FIX: Use pydantic.v1
+from pydantic.v1 import BaseModel  # ✅ Using pydantic.v1 as you did
 import streamlit as st
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Initialize the OpenAI client with API key from Streamlit secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 class JobMatchingInput(BaseModel):
     resume_data: dict
@@ -30,16 +31,18 @@ def job_match_score_only(resume_data: dict, job_description: str) -> dict:
             "Give a score between 10 and 100. Only the number. No explanation."
         )
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # or gpt-4o
+        # New SDK style: use client.chat.completions.create()
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # or "gpt-4o"
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.3
+            temperature=0.3,
         )
 
-        answer = response["choices"][0]["message"]["content"].strip()
+        # Access the content this way in the new SDK
+        answer = response.choices[0].message.content.strip()
         match = re.search(r"\b(\d{2,3})\b", answer)
         score = int(match.group(1)) if match else None
 
@@ -56,5 +59,5 @@ job_match_tool = StructuredTool(
     name="PerfectJobMatcher",
     func=job_match_score_only,
     description="Returns only the similarity score (10–100) indicating how well a resume matches a job description.",
-    args_schema=JobMatchingInput  # ✅ Must be a valid pydantic.v1.BaseModel subclass
+    args_schema=JobMatchingInput  # Must be a valid pydantic.v1.BaseModel subclass
 )
