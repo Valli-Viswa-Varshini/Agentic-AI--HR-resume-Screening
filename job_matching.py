@@ -4,7 +4,11 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel
 import streamlit as st
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Set API key via env variable
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+# Initialize OpenAI client
+client = OpenAI()
 
 class JobMatchingInput(BaseModel):
     resume_data: dict
