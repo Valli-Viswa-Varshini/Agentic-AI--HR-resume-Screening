@@ -1,6 +1,6 @@
 langchain==0.1.14
 langchain-openai==0.1.7
-openai==0.28
+openai==1.0.0
 faiss-cpu
 pandas
 requests
