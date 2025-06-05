@@ -1,12 +1,10 @@
 import os
 import json
 import openai
-from langchain.embeddings import OpenAIEmbeddings
 import streamlit as st
 
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+# Set API key securely
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def extract_resume_data(text):
     prompt = f"""
@@ -28,8 +26,7 @@ def extract_resume_data(text):
     """
 
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        response_format={"type": "json_object"},  # Fix applied
+        model="gpt-4o-mini",  # 🔄 Updated model
         messages=[
             {"role": "system", "content": "You are an expert resume parser. Extract key details and return structured JSON."},
             {"role": "user", "content": prompt}
