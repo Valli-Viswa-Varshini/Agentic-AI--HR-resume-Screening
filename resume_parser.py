@@ -1,10 +1,10 @@
 import os
 import json
-import openai
+from openai import OpenAI
 import streamlit as st
 
 # Set API key securely
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def extract_resume_data(text):
     prompt = f"""
@@ -25,8 +25,8 @@ def extract_resume_data(text):
     Ensure valid JSON response.
     """
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",  # 🔄 Updated model
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are an expert resume parser. Extract key details and return structured JSON."},
             {"role": "user", "content": prompt}
@@ -35,7 +35,7 @@ def extract_resume_data(text):
     )
 
     try:
-        raw_text = response["choices"][0]["message"]["content"].strip()
-        return json.loads(raw_text)  
+        raw_text = response.choices[0].message.content.strip()
+        return json.loads(raw_text)
     except json.JSONDecodeError:
         return None
