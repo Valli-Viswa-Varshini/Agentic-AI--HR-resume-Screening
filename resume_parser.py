@@ -2,14 +2,12 @@ import os
 import json
 import openai
 from langchain_openai import OpenAIEmbeddings
-from dotenv import load_dotenv
+import streamlit as st
 
-load_dotenv()  
 embedding_model = OpenAIEmbeddings(
     model="text-embedding-3-small",
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
-
 
 def extract_resume_data(text):
     prompt = f"""
