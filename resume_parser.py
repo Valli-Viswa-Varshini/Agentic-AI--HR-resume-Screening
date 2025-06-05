@@ -5,11 +5,9 @@ from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()  
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-embedding_model = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-    api_key=os.getenv("OPENAI_API_KEY")  # or hardcoded "sk-..." for local testing
-)
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
 
 def extract_resume_data(text):
