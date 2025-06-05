@@ -11,11 +11,11 @@ class JobMatchingInput(BaseModel):
     resume_data: dict
     job_description: str
 
-def job_match_score_only(resume_data: dict, job_description: str) -> dict:
+def job_match_score_only(args: JobMatchingInput) -> dict:
     """Returns only the similarity score between resume and job description (10 to 100)."""
 
-    resume_text = "\n".join(f"{k}: {v}" for k, v in resume_data.items() if v).strip()
-    job_description = job_description.strip()
+    resume_text = "\n".join(f"{k}: {v}" for k, v in args.resume_data.items() if v).strip()
+    job_description = args.job_description.strip()
 
     try:
         system_prompt = (
@@ -31,7 +31,7 @@ def job_match_score_only(resume_data: dict, job_description: str) -> dict:
         )
 
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # 🔄 Updated model
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
