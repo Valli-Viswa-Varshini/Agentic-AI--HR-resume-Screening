@@ -1,4 +1,5 @@
 langchain==0.1.14
+langchain-openai==0.1.7
 openai==1.30.1
 faiss-cpu
 pandas
@@ -8,7 +9,5 @@ PyPDF2
 streamlit==1.34.0
 pyodbc
 python-dotenv==1.0.1
-
-# Add pydantic v2 support for langchain
 pydantic>=2.6,<3.0
 langsmith>=0.1.7
