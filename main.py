@@ -79,8 +79,6 @@ def orchestrator(resume_text, job_description, resume_name, progress_bar):
 
         if resume_data:
             st.success("✅ Resume Data Extracted!")
-            st.subheader("📄 Parsed Resume JSON:")
-            st.json(resume_data)
         else:
             st.error(f"❌ **{resume_name}:** Failed to extract structured data.")
             st.info("🔍 Debug: Here's the raw text extracted from the PDF:")
