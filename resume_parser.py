@@ -1,7 +1,7 @@
 import os
 import json
 import openai
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings  # ✅ new import
 from dotenv import load_dotenv
 
 load_dotenv()  
