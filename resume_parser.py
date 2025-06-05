@@ -1,13 +1,12 @@
 import os
 import json
 import openai
-from langchain_openai import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 import streamlit as st
 
-embedding_model = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-    api_key=st.secrets["OPENAI_API_KEY"]
-)
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
 def extract_resume_data(text):
     prompt = f"""
