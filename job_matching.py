@@ -1,14 +1,11 @@
 import os
-from openai import OpenAI
+import openai
+import re
 from langchain.tools import StructuredTool
 from pydantic import BaseModel
 import streamlit as st
 
-# Set API key via env variable
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-
-# Initialize OpenAI client
-client = OpenAI()
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 class JobMatchingInput(BaseModel):
     resume_data: dict
@@ -33,8 +30,8 @@ def job_match_score_only(resume_data: dict, job_description: str) -> dict:
             "Give a score between 10 and 100. Only the number. No explanation."
         )
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",  # 🔄 Updated model
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -42,8 +39,7 @@ def job_match_score_only(resume_data: dict, job_description: str) -> dict:
             temperature=0.3
         )
 
-        answer = response.choices[0].message.content.strip()
-        import re
+        answer = response["choices"][0]["message"]["content"].strip()
         match = re.search(r"\b(\d{2,3})\b", answer)
         score = int(match.group(1)) if match else None
 
