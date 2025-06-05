@@ -10,3 +10,4 @@ streamlit
 pyodbc
 langchain-community==0.0.36
 pydantic==1.10.13
+langsmith==0.0.40
