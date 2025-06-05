@@ -2,7 +2,7 @@ import os
 import openai
 import re
 from langchain.tools import StructuredTool
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel  # ✅ FIX: Use pydantic.v1
 import streamlit as st
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -11,11 +11,11 @@ class JobMatchingInput(BaseModel):
     resume_data: dict
     job_description: str
 
-def job_match_score_only(args: JobMatchingInput) -> dict:
+def job_match_score_only(resume_data: dict, job_description: str) -> dict:
     """Returns only the similarity score between resume and job description (10 to 100)."""
 
-    resume_text = "\n".join(f"{k}: {v}" for k, v in args.resume_data.items() if v).strip()
-    job_description = args.job_description.strip()
+    resume_text = "\n".join(f"{k}: {v}" for k, v in resume_data.items() if v).strip()
+    job_description = job_description.strip()
 
     try:
         system_prompt = (
@@ -31,7 +31,7 @@ def job_match_score_only(args: JobMatchingInput) -> dict:
         )
 
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
+            model="gpt-4o-mini",  # or gpt-4o
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -56,5 +56,5 @@ job_match_tool = StructuredTool(
     name="PerfectJobMatcher",
     func=job_match_score_only,
     description="Returns only the similarity score (10–100) indicating how well a resume matches a job description.",
-    args_schema=JobMatchingInput
+    args_schema=JobMatchingInput  # ✅ Must be a valid pydantic.v1.BaseModel subclass
 )
