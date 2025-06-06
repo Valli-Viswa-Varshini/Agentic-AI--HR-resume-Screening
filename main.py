@@ -6,44 +6,45 @@ from candidate_categorization import categorization_tool
 from decision_making import decision_tool
 import time
 import pandas as pd
-
-# ✅ Add SQL imports
 import pyodbc
 from datetime import datetime
 import os
+import psycopg2
+from psycopg2 import sql
 
-# ✅ SQL Server connection setup (edit these values)
+# ✅ Replace SQL Server connection with Supabase PostgreSQL
 def get_sql_connection():
-    return pyodbc.connect(
-        'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=LAPTOP-29L4TA1D\SQLEXPRESS01;'
-        'DATABASE=resumeoutputdata;'
-        'Trusted_Connection=yes;'
+    return psycopg2.connect(
+        host="db.hqxyqkwnweppfppxnkhg.supabase.co",        # e.g., xyz.supabase.co
+        port="5432",
+        database="postgres",             # usually default in Supabase
+        user="postgres",            # e.g., postgres
+        password="qg0yKi0jEn9YbniB",    # from DB settings
+        sslmode="require"                # required for Supabase
     )
 
-# ✅ Save a single row to SQL Server
+# ✅ Save a single row to Supabase PostgreSQL
 def save_result_to_sql(row):
     try:
         conn = get_sql_connection()
         cursor = conn.cursor()
 
-        # Create table if it doesn't exist
+        # Ensure table exists (optional, if you already created it in Supabase console)
         cursor.execute('''
-            IF OBJECT_ID('ResumeResults', 'U') IS NULL
-            CREATE TABLE ResumeResults (
-                Id INT IDENTITY(1,1) PRIMARY KEY,
-                ResumeName NVARCHAR(255),
+            CREATE TABLE IF NOT EXISTS ResumeResults (
+                Id SERIAL PRIMARY KEY,
+                ResumeName VARCHAR(255),
                 JobMatchScore INT,
-                Category NVARCHAR(255),
-                Decision NVARCHAR(255),
-                Timestamp DATETIME
-            )
+                Category VARCHAR(255),
+                Decision VARCHAR(255),
+                Timestamp TIMESTAMP
+            );
         ''')
 
         # Insert result
         cursor.execute('''
             INSERT INTO ResumeResults (ResumeName, JobMatchScore, Category, Decision, Timestamp)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', (
             row["Resume Name"],
             row["Job Match Score"],
@@ -56,7 +57,8 @@ def save_result_to_sql(row):
         conn.close()
 
     except Exception as e:
-        st.error(f"⚠️ Failed to save to database: {e}")
+        st.error(f"⚠️ Failed to save to Supabase: {e}")
+
 
 def extract_text_from_pdf(pdf_file):
     """Extracts text from a PDF file using PyPDF2."""
