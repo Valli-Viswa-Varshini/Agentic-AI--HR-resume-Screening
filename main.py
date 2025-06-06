@@ -166,5 +166,3 @@ if uploaded_pdfs and st.button("🚀 Process Resumes"):
                     file_name=os.path.basename(output_file),
                     mime="text/csv"
                 )
-
-now this is my main.py and it accepts pdf resume and now i want u to modify it so that it can process word files also 
