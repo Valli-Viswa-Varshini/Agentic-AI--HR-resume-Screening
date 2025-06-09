@@ -15,10 +15,10 @@ from psycopg2 import sql
 # ✅ Replace SQL Server connection with Supabase PostgreSQL
 def get_sql_connection():
     return psycopg2.connect(
-        host="db.hqxyqkwnweppfppxnkhg.supabase.co",        # e.g., xyz.supabase.co
-        port="5432",
+        host="aws-0-ap-south-1.pooler.supabase.com",        # e.g., xyz.supabase.co
+        port="6543",
         database="postgres",             # usually default in Supabase
-        user="postgres",            # e.g., postgres
+        user="postgres.hqxyqkwnweppfppxnkhg",            # e.g., postgres
         password="qg0yKi0jEn9YbniB",    # from DB settings
         sslmode="require"                # required for Supabase
     )
