@@ -1,5 +1,6 @@
 import streamlit as st
 from PyPDF2 import PdfReader
+from docx import Document  # ✅ New import for DOCX support
 from resume_parser import extract_resume_data
 from job_matching import job_match_tool
 from candidate_categorization import categorization_tool
@@ -29,7 +30,6 @@ def save_result_to_sql(row):
         conn = get_sql_connection()
         cursor = conn.cursor()
 
-        # Ensure table exists (optional, if you already created it in Supabase console)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS ResumeResults (
                 Id SERIAL PRIMARY KEY,
@@ -41,7 +41,6 @@ def save_result_to_sql(row):
             );
         ''')
 
-        # Insert result
         cursor.execute('''
             INSERT INTO ResumeResults (ResumeName, JobMatchScore, Category, Decision, Timestamp)
             VALUES (%s, %s, %s, %s, %s)
@@ -59,9 +58,7 @@ def save_result_to_sql(row):
     except Exception as e:
         st.error(f"⚠️ Failed to save to Supabase: {e}")
 
-
 def extract_text_from_pdf(pdf_file):
-    """Extracts text from a PDF file using PyPDF2."""
     reader = PdfReader(pdf_file)
     text = ""
     for page in reader.pages:
@@ -70,8 +67,12 @@ def extract_text_from_pdf(pdf_file):
             text += extracted_text + "\n"
     return text.strip()
 
+def extract_text_from_docx(docx_file):
+    doc = Document(docx_file)
+    text = "\n".join([para.text for para in doc.paragraphs])
+    return text.strip()
+
 def orchestrator(resume_text, job_description, resume_name, progress_bar):
-    """Processes each resume and updates UI in sections."""
     try:
         progress_bar.progress(10)
         st.write(f"📄 Processing **{resume_name}**...")
@@ -83,7 +84,7 @@ def orchestrator(resume_text, job_description, resume_name, progress_bar):
             st.success("✅ Resume Data Extracted!")
         else:
             st.error(f"❌ **{resume_name}:** Failed to extract structured data.")
-            st.info("🔍 Debug: Here's the raw text extracted from the PDF:")
+            st.info("🔍 Debug: Here's the raw text extracted:")
             st.code(resume_text[:1000] + ("..." if len(resume_text) > 1000 else ""), language="text")
             return {"error": "Resume parsing failed."}
 
@@ -127,38 +128,50 @@ def orchestrator(resume_text, job_description, resume_name, progress_bar):
 st.set_page_config(page_title="Resume Screening", layout="wide")
 st.title("📂 **AI-Powered Resume Screening System**")
 
-uploaded_pdfs = st.file_uploader("📤 Upload Resumes (Multiple PDFs Allowed)", type="pdf", accept_multiple_files=True)
+uploaded_files = st.file_uploader(
+    "📤 Upload Resumes (PDF or DOCX, Multiple Allowed)",
+    type=["pdf", "docx"],
+    accept_multiple_files=True
+)
+
 job_description = st.text_area("📝 **Enter Job Description**", height=200)
 
-if uploaded_pdfs and st.button("🚀 Process Resumes"):
+if uploaded_files and st.button("🚀 Process Resumes"):
     if not job_description:
         st.error("⚠️ Please enter a job description.")
     else:
         st.write("🔄 **Processing Resumes...** Please wait.")
         results = []
 
-        for index, pdf in enumerate(uploaded_pdfs):
-            resume_text = extract_text_from_pdf(pdf)
+        for index, file in enumerate(uploaded_files):
+            resume_name = file.name
             progress_bar = st.progress(0)
-            result = orchestrator(resume_text, job_description, pdf.name, progress_bar)
+
+            if file.type == "application/pdf":
+                resume_text = extract_text_from_pdf(file)
+            elif file.type in ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"]:
+                resume_text = extract_text_from_docx(file)
+            else:
+                st.error(f"❌ Unsupported file type: {file.type}")
+                continue
+
+            result = orchestrator(resume_text, job_description, resume_name, progress_bar)
 
             if result and "error" not in result:
-                save_result_to_sql(result)  # ✅ Save to SQL Server
+                save_result_to_sql(result)
                 results.append(result)
 
         st.subheader("📊 Final Summary")
 
         if results:
-            df = pd.DataFrame(results)  # Convert results to a DataFrame
-            st.table(df)  # Display results in a table
+            df = pd.DataFrame(results)
+            st.table(df)
 
-            # ✅ Save the DataFrame to a CSV with timestamp
             os.makedirs("outputs", exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_file = f"outputs/screening_results_{timestamp}.csv"
             df.to_csv(output_file, index=False)
 
-            # ✅ Add download button in Streamlit
             with open(output_file, "rb") as f:
                 st.download_button(
                     label="📥 Download Screening Results as CSV",
