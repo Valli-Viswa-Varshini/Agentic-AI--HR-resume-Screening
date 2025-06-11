@@ -41,7 +41,12 @@ Only provide the JSON. No markdown, no explanation, no extra text.
 
         raw_text = response.choices[0].message.content.strip()
 
-       
+        # Optional: show what the model returned
+        st.subheader("🔍 Raw OpenAI Response")
+        st.code(raw_text, language="json")
+
+        return json.loads(raw_text)
+
     except json.JSONDecodeError as e:
         st.error("❌ Failed to decode JSON from OpenAI response.")
         st.text(f"Error: {e}")
